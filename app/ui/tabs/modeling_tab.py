@@ -69,7 +69,7 @@ class ModelingTab(BaseTab):
         button_layout = QHBoxLayout()
 
         self.train_btn = QPushButton("开始训练")
-        self.train_btn.setEnabled(False)
+        # self.train_btn.setEnabled(False)
         self.train_btn.clicked.connect(self.start_training)
         button_layout.addWidget(self.train_btn)
 

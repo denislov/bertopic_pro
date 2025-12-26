@@ -37,6 +37,10 @@ class SettingsTab(BaseTab):
         # Create tab widget for different setting categories
         self.settings_tabs = QTabWidget()
 
+        # Initialize state
+        self.config_manager = get_config_manager()
+        self.model_manager = ModelManager()
+        
         # Create setting pages
         self.create_model_repository_page()
         self.create_llm_config_page()
@@ -62,9 +66,7 @@ class SettingsTab(BaseTab):
 
         self.setLayout(main_layout)
 
-        # Initialize state
-        self.config_manager = get_config_manager()
-        self.model_manager = ModelManager()
+        
 
         # Load current settings
         self.load_settings()

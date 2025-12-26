@@ -4,18 +4,17 @@ Tab 3: Interactive visualization generation with Plotly and QWebEngineView.
 """
 
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional
 import tempfile
 
 from PySide6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QFileDialog, QGroupBox,
+    QVBoxLayout, QLabel, QPushButton, QFileDialog, QGroupBox,
     QListWidget, QListWidgetItem, QMessageBox,
     QSplitter, QWidget, QComboBox,
 )
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtWebEngineWidgets import QWebEngineView
-
+from PySide6.QtWebEngineCore import QWebEngineSettings
 from app.ui.tabs.base_tab import BaseTab
 from app.core.visualization_generator import VisualizationGenerator
 from app.core.topic_analyzer import TopicAnalyzer
@@ -69,6 +68,12 @@ class VisualizationTab(BaseTab):
         # Web view for Plotly
         self.web_view = QWebEngineView()
         self.web_view.setVisible(False)
+
+        settings = self.web_view.settings()
+        settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
+        settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
+        settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptEnabled, True)
+        
         right_layout.addWidget(self.web_view)
 
         splitter.addWidget(right_widget)

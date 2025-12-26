@@ -240,6 +240,8 @@ class ModelManager:
                 repo_id=model_name,
                 local_dir=str(model_path),
                 local_dir_use_symlinks=False,
+                ignore_patterns=["*.h5", "*.onnx"],
+                resume_download=True
             )
 
             if progress_callback:
@@ -315,12 +317,12 @@ class ModelManager:
         """
         try:
             # Check if it's a local path
-            if Path(model_name).exists():
+            if Path("models/embeddings/"+model_name).exists():
                 self.logger.info(f"Loading model from local path: {model_name}")
                 if progress_callback:
                     progress_callback(50, "Loading model...")
 
-                model = SentenceTransformer(model_name, device=self.device)
+                model = SentenceTransformer("models/embeddings/"+model_name, device=self.device, local_files_only=True)
 
                 if progress_callback:
                     progress_callback(100, "Model loaded")

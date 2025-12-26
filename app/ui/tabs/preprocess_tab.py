@@ -77,13 +77,15 @@ class PreprocessTab(BaseTab):
         title.setProperty("class", "title")
         top_layout.addWidget(title)
 
+        row_layout = QHBoxLayout()
         # File selection section
         file_group = self.create_file_section()
-        top_layout.addWidget(file_group)
+        row_layout.addWidget(file_group)
 
         # Column mapping section
         column_group = self.create_column_section()
-        top_layout.addWidget(column_group)
+        row_layout.addWidget(column_group)
+        top_layout.addLayout(row_layout)
 
         # Processing options section
         options_layout = QHBoxLayout()
@@ -460,6 +462,7 @@ class PreprocessTab(BaseTab):
     def on_processing_finished(self, result: pd.DataFrame):
         """Handle processing completion."""
         self.processed_df = result
+        self.data_loaded.emit(result)
 
         # Update UI
         self.progress_bar.setVisible(False)

@@ -32,7 +32,7 @@ class TextProcessor:
         self,
         stopwords_path: Optional[Path] = None,
         custom_dict_path: Optional[Path] = None,
-        enable_parallel: bool = True,
+        enable_parallel: bool = False,
     ):
         """
         Initialize text processor.
