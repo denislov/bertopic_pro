@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QMenu,
     QStatusBar,
 )
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize,Slot,QObject
 from PySide6.QtGui import QAction, QIcon
 
 from app.ui.tabs.preprocess_tab import PreprocessTab
@@ -25,9 +25,9 @@ from app.ui.tabs.settings_tab import SettingsTab
 from app.utils.logger import get_logger, setup_logging
 from app.utils.config_manager import get_config_manager
 import config
+from app.ui.Ui_Home import Ui_Home
 
-
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, Ui_Home):
     """
     Main application window.
 
@@ -48,49 +48,24 @@ class MainWindow(QMainWindow):
         # Get logger (will be set up after console is created)
         self.logger = get_logger(self.__class__.__name__)
 
-        # Initialize UI components
-        self.tab_widget: Optional[QTabWidget] = None
-        self.console: Optional[QPlainTextEdit] = None
-        self.preprocess_tab: Optional[PreprocessTab] = None
-        self.modeling_tab: Optional[ModelingTab] = None
-        self.visualization_tab: Optional[VisualizationTab] = None
-        self.settings_tab: Optional[SettingsTab] = None
-
         # Set up the UI
-        self.setup_ui()
+        self.setupUi(self)
+        self._setup_ui()
 
         # Set up logging (now that console exists)
-        self.qt_logger = setup_logging(self.console)
+        self.qt_logger = setup_logging(self.logConsole)
 
         # Restore window geometry
         self.restore_geometry()
 
         self.logger.info(f"{config.APP_NAME} v{config.APP_VERSION} started")
 
-    def setup_ui(self):
+    def _setup_ui(self):
         """Set up the main window UI."""
         # Window properties
         self.setWindowTitle(config.WINDOW_TITLE)
         self.setMinimumSize(config.WINDOW_MIN_WIDTH, config.WINDOW_MIN_HEIGHT)
         self.resize(config.WINDOW_DEFAULT_WIDTH, config.WINDOW_DEFAULT_HEIGHT)
-
-        # Create central widget
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-
-        # Main layout
-        main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-
-        # Create splitter for tabs and console
-        splitter = QSplitter(Qt.Vertical)
-
-        # Create tab widget
-        self.tab_widget = QTabWidget()
-        self.tab_widget.setTabPosition(QTabWidget.North)
-        self.tab_widget.setDocumentMode(False)
-        self.tab_widget.setMovable(False)
 
         # Create tabs
         self.preprocess_tab = PreprocessTab()
@@ -99,91 +74,56 @@ class MainWindow(QMainWindow):
         self.settings_tab = SettingsTab()
 
         # Add tabs to tab widget
-        self.tab_widget.addTab(self.preprocess_tab, "1. 数据预处理")
-        self.tab_widget.addTab(self.modeling_tab, "2. BERTopic 建模")
-        self.tab_widget.addTab(self.visualization_tab, "3. 可视化生成")
-        self.tab_widget.addTab(self.settings_tab, "4. 系统设置")
+        self.tabWidget.addTab(self.preprocess_tab, "1. 数据预处理")
+        self.tabWidget.addTab(self.modeling_tab, "2. BERTopic 建模")
+        self.tabWidget.addTab(self.visualization_tab, "3. 可视化生成")
+        self.tabWidget.addTab(self.settings_tab, "4. 系统设置")
 
         # Initially disable tabs 2 and 3 (until data is loaded and model trained)
-        self.tab_widget.setTabEnabled(1, False)  # Modeling tab
-        self.tab_widget.setTabEnabled(2, False)  # Visualization tab
+        self.tabWidget.setTabEnabled(1, False)  # Modeling tab
+        self.tabWidget.setTabEnabled(2, False)  # Visualization tab
 
         # Create console
-        self.console = QPlainTextEdit()
-        self.console.setObjectName("console")  # For QSS styling
-        self.console.setReadOnly(True)
-        self.console.setMaximumBlockCount(config.CONSOLE_LOG_MAX_LINES)
-        self.console.setPlaceholderText("应用日志将显示在这里...")
+        self.logConsole.setReadOnly(True)
+        self.logConsole.setMaximumBlockCount(config.CONSOLE_LOG_MAX_LINES)
+        self.logConsole.setPlaceholderText("应用日志将显示在这里...")
 
-        # Add to splitter
-        splitter.addWidget(self.tab_widget)
-        splitter.addWidget(self.console)
-
-        # Set initial splitter sizes (70% tabs, 30% console)
-        splitter.setSizes([700, 300])
-
-        # Add splitter to main layout
-        main_layout.addWidget(splitter)
+        # self.verticalLayout.removeWidget(self.tabWidget)
+        # self.verticalLayout.removeWidget(self.logConsole)
+        # self.splitter = QSplitter(Qt.Vertical)
+        # self.splitter.addWidget(self.tabWidget)
+        # self.splitter.addWidget(self.logConsole)
+        # self.splitter.setSizes([700, 300])
+        # self.verticalLayout.addWidget(self.splitter)
 
         # Create menu bar
-        self.create_menu_bar()
-
-        # Create status bar
-        self.create_status_bar()
+        self.menu_bar_bind()
 
         # Connect tab signals
         self.connect_tab_signals()
 
-    def create_menu_bar(self):
+        # Create status bar
+        self.create_status_bar()
+
+    def menu_bar_bind(self):
         """Create the menu bar."""
-        menubar = self.menuBar()
-
-        # File menu
-        file_menu = menubar.addMenu("文件")
-
         # Open action
-        open_action = QAction("打开数据文件...", self)
-        open_action.setShortcut("Ctrl+O")
-        open_action.triggered.connect(self.on_open_file)
-        file_menu.addAction(open_action)
+        self.actionOpen.setShortcut("Ctrl+O")
+        self.actionOpen.triggered.connect(self.on_open_file)
 
         # Recent files submenu
-        recent_menu = file_menu.addMenu("最近打开")
-        self.update_recent_files_menu(recent_menu)
-
-        file_menu.addSeparator()
+        self.update_recent_files_menu(self.menuRecent)
 
         # Exit action
-        exit_action = QAction("退出", self)
-        exit_action.setShortcut("Ctrl+Q")
-        exit_action.triggered.connect(self.close)
-        file_menu.addAction(exit_action)
-
-        # View menu
-        view_menu = menubar.addMenu("视图")
-
-        # Toggle console action
-        toggle_console_action = QAction("显示/隐藏控制台", self)
-        toggle_console_action.setShortcut("Ctrl+`")
-        toggle_console_action.triggered.connect(self.toggle_console)
-        view_menu.addAction(toggle_console_action)
-
-        # Clear console action
-        clear_console_action = QAction("清空控制台", self)
-        clear_console_action.triggered.connect(self.clear_console)
-        view_menu.addAction(clear_console_action)
+        self.actionQuit.setShortcut("Ctrl+Q")
+        self.actionQuit.triggered.connect(self.close)
 
         # Help menu
-        help_menu = menubar.addMenu("帮助")
-
-        # About action
-        about_action = QAction("关于", self)
-        about_action.triggered.connect(self.show_about)
-        help_menu.addAction(about_action)
+        self.actionAbout.triggered.connect(self.show_about)
 
     def create_status_bar(self):
         """Create the status bar."""
-        self.statusBar().showMessage("就绪")
+        self.statusbar.showMessage("就绪")
 
     def connect_tab_signals(self):
         """Connect signals between tabs."""
@@ -211,9 +151,10 @@ class MainWindow(QMainWindow):
         """Handle open file action."""
         self.logger.info("Open file dialog triggered")
         # Switch to preprocess tab
-        self.tab_widget.setCurrentIndex(0)
-        self.statusBar().showMessage("请在数据预处理标签中选择文件", 3000)
-
+        self.tabWidget.setCurrentIndex(0)
+        self.statusbar.showMessage("请在数据预处理标签中选择文件", 3000)
+    
+    @Slot(QObject)
     def on_data_loaded(self, data):
         """
         Handle data loaded signal.
@@ -222,14 +163,14 @@ class MainWindow(QMainWindow):
             data: Loaded data object (pandas DataFrame)
         """
         self.logger.info("Data loaded, enabling modeling tab")
-        self.tab_widget.setTabEnabled(1, True)
+        self.tabWidget.setTabEnabled(1, True)
 
         # Pass processed data to modeling tab if it has processed text
         if hasattr(data, 'columns') and 'text_processed' in data.columns:
             self.modeling_tab.set_processed_data(data)
-            self.statusBar().showMessage("处理后的数据已传递到建模模块", 3000)
+            self.statusbar.showMessage("处理后的数据已传递到建模模块", 3000)
         else:
-            self.statusBar().showMessage("数据加载完成，建模功能已启用", 3000)
+            self.statusbar.showMessage("数据加载完成，建模功能已启用", 3000)
 
     def on_model_trained(self, model):
         """
@@ -239,15 +180,15 @@ class MainWindow(QMainWindow):
             model: Trained model result dict containing 'topic_analyzer'
         """
         self.logger.info("Model trained, enabling visualization tab")
-        self.tab_widget.setTabEnabled(2, True)
+        self.tabWidget.setTabEnabled(2, True)
 
         # Pass topic analyzer to visualization tab
         if isinstance(model, dict) and 'topic_analyzer' in model:
             topic_analyzer = model['topic_analyzer']
             self.visualization_tab.set_topic_analyzer(topic_analyzer)
-            self.statusBar().showMessage("模型训练完成，可视化功能已启用", 3000)
+            self.statusbar.showMessage("模型训练完成，可视化功能已启用", 3000)
         else:
-            self.statusBar().showMessage("模型训练完成", 3000)
+            self.statusbar.showMessage("模型训练完成", 3000)
 
     def on_error(self, error_message: str):
         """
@@ -256,8 +197,8 @@ class MainWindow(QMainWindow):
         Args:
             error_message: Error message
         """
-        self.statusBar().showMessage(f"错误: {error_message}", 5000)
-
+        self.statusbar.showMessage(f"错误: {error_message}", 5000)
+    
     def on_status_change(self, status_message: str):
         """
         Handle status change signal.
@@ -265,16 +206,8 @@ class MainWindow(QMainWindow):
         Args:
             status_message: Status message
         """
-        self.statusBar().showMessage(status_message, 3000)
+        self.statusbar.showMessage(status_message, 3000)
 
-    def toggle_console(self):
-        """Toggle console visibility."""
-        self.console.setVisible(not self.console.isVisible())
-
-    def clear_console(self):
-        """Clear console content."""
-        self.console.clear()
-        self.logger.info("Console cleared")
 
     def update_recent_files_menu(self, menu: QMenu):
         """

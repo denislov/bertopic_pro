@@ -29,11 +29,6 @@ class SettingsTab(BaseTab):
         """Set up the UI for this tab."""
         main_layout = QVBoxLayout(self)
 
-        # Title
-        title = QLabel("4. 系统设置")
-        title.setProperty("class", "title")
-        main_layout.addWidget(title)
-
         # Create tab widget for different setting categories
         self.settings_tabs = QTabWidget()
 
@@ -78,7 +73,6 @@ class SettingsTab(BaseTab):
 
         # Description
         desc = QLabel("管理已缓存的嵌入模型")
-        desc.setProperty("class", "subtitle")
         layout.addWidget(desc)
 
         # Model table
@@ -122,7 +116,6 @@ class SettingsTab(BaseTab):
 
         # Description
         desc = QLabel("配置 LLM 用于主题标签生成和表示学习")
-        desc.setProperty("class", "subtitle")
         scroll_layout.addWidget(desc)
 
         # OpenAI configuration
@@ -213,7 +206,6 @@ class SettingsTab(BaseTab):
         provider_layout.addWidget(self.llm_provider_combo)
 
         hint = QLabel("选择 LLM 提供商用于主题标签生成")
-        hint.setProperty("class", "hint")
         provider_layout.addWidget(hint)
 
         provider_group.setLayout(provider_layout)
@@ -234,7 +226,6 @@ class SettingsTab(BaseTab):
 
         # Description
         desc = QLabel("配置硬件和设备选项")
-        desc.setProperty("class", "subtitle")
         layout.addWidget(desc)
 
         # Device selection
@@ -247,7 +238,6 @@ class SettingsTab(BaseTab):
 
         # Device info
         self.device_info_label = QLabel()
-        self.device_info_label.setProperty("class", "hint")
         device_layout.addWidget(self.device_info_label)
 
         # Update device info
@@ -285,7 +275,6 @@ class SettingsTab(BaseTab):
 
         # Description
         desc = QLabel("配置数据和模型存储路径")
-        desc.setProperty("class", "subtitle")
         layout.addWidget(desc)
 
         # Paths group
@@ -333,7 +322,6 @@ class SettingsTab(BaseTab):
 
         # Warning label
         warning = QLabel("⚠️ 修改路径后需要重启应用才能生效")
-        warning.setProperty("class", "hint")
         layout.addWidget(warning)
 
         layout.addStretch()

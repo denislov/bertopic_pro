@@ -28,11 +28,6 @@ class VisualizationTab(BaseTab):
         """Set up the UI for this tab."""
         main_layout = QVBoxLayout(self)
 
-        # Title
-        title = QLabel("3. 可视化生成")
-        title.setProperty("class", "title")
-        main_layout.addWidget(title)
-
         # Main splitter (left: controls, right: visualization)
         splitter = QSplitter(Qt.Horizontal)
 
@@ -61,7 +56,6 @@ class VisualizationTab(BaseTab):
 
         # Info label
         self.info_label = QLabel("请在建模完成后选择可视化类型")
-        self.info_label.setProperty("class", "hint")
         self.info_label.setAlignment(Qt.AlignCenter)
         right_layout.addWidget(self.info_label)
 

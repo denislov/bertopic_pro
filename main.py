@@ -7,7 +7,6 @@ import sys
 import logging
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QFont, QFontDatabase
-from PySide6.QtCore import Qt
 
 import config
 from app.ui.main_window import MainWindow
@@ -31,28 +30,6 @@ def setup_fonts():
             app_font = QFont("SimHei", 10)
 
     return app_font
-
-
-def load_stylesheet() -> str:
-    """
-    Load QSS stylesheet.
-
-    Returns:
-        Stylesheet content as string
-    """
-    style_path = config.BASE_DIR / "app" / "ui" / "styles" / "theme.qss"
-    if style_path.exists():
-        try:
-            with open(style_path, "r", encoding="utf-8") as f:
-                stylesheet = f.read()
-            logging.info(f"Loaded stylesheet: {style_path}")
-            return stylesheet
-        except Exception as e:
-            logging.error(f"Failed to load stylesheet: {e}")
-            return ""
-    else:
-        logging.warning(f"Stylesheet not found: {style_path}")
-        return ""
 
 
 def setup_exception_hook():
@@ -96,20 +73,6 @@ def main():
     logging.info(f"Starting {config.APP_NAME} v{config.APP_VERSION}")
     logging.info("=" * 60)
 
-    # Enable High DPI scaling (Qt 6.5+ handles this automatically)
-    # These attributes are deprecated in Qt 6.5+, only set if available
-    try:
-        if hasattr(Qt.ApplicationAttribute, "AA_EnableHighDpiScaling"):
-            QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
-    except AttributeError:
-        pass  # Qt 6.5+ doesn't need this
-
-    try:
-        if hasattr(Qt.ApplicationAttribute, "AA_UseHighDpiPixmaps"):
-            QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
-    except AttributeError:
-        pass  # Qt 6.5+ doesn't need this
-
     # Create application
     app = QApplication(sys.argv)
 
@@ -119,14 +82,6 @@ def main():
     app.setOrganizationName(config.ORGANIZATION_NAME)
 
     # Set up fonts
-    app_font = setup_fonts()
-    app.setFont(app_font)
-    logging.info(f"Application font: {app_font.family()}")
-
-    # Load and apply stylesheet
-    stylesheet = load_stylesheet()
-    if stylesheet:
-        app.setStyleSheet(stylesheet)
 
     # Set up exception hook
     setup_exception_hook()
